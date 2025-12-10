@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Colonização de Marte — Site</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --bg: #0b1220;
+            --panel: #071028;
+            --accent: linear-gradient(135deg,#2db7ff,#3b6bff);
+            --primary: #2db7ff;
+            --muted: #9fbbe6;
+            --card: rgba(255,255,255,0.03);
+            --glass: rgba(255,255,255,0.04);
+            --sidebar-w: 260px;
+        }
+        *{box-sizing:border-box}
+        html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;color:#eaf6ff;background:
+            radial-gradient(1200px 600px at 10% 10%, rgba(59,107,255,0.08), transparent),
+            linear-gradient(180deg,var(--bg), #041028 60%); -webkit-font-smoothing:antialiased;}
+        a{color:inherit;text-decoration:none}
+        .app{
+            display:flex;
+            min-height:100vh;
+            gap:24px;
+            padding:28px;
+            transition:padding .25s;
+        }
+
+        /* Sidebar */
+        .sidebar{
+            width:var(--sidebar-w);
+            background:linear-gradient(180deg, rgba(20,40,80,0.5), rgba(10,18,36,0.45));
+            border-radius:14px;
+            padding:18px;
+            backdrop-filter: blur(8px) saturate(120%);
+            box-shadow: 0 6px 30px rgba(6,18,40,0.6);
+            display:flex;
+            flex-direction:column;
+            gap:18px;
+            min-height: calc(100vh - 56px);
+        }
+        .brand{
+            display:flex;
+            gap:12px;
+            align-items:center;
+        }
+        .logo{
+            width:48px;height:48px;border-radius:10px;
+            background:var(--accent);
+            display:grid;place-items:center;color:white;font-weight:700;
+            box-shadow:0 6px 18px rgba(43,95,255,0.18), inset 0 -6px 14px rgba(0,0,0,0.15);
+        }
+        .brand h1{font-size:16px;margin:0}
+        .brand p{margin:0;font-size:12px;color:var(--muted)}
+
+        .nav{
+            display:flex;flex-direction:column;gap:8px;
+        }
+        .nav button{
+            appearance:none;
+            border:0;
+            background:transparent;
+            color:rgba(255,255,255,0.9);
+            text-align:left;
+            padding:12px;
+            border-radius:10px;
+            display:flex;
+            gap:12px;
+            align-items:center;
+            font-size:14px;
+            cursor:pointer;
+            transition:all .18s;
+        }
+        .nav button:hover{transform:translateX(6px)}
+        .nav button svg{opacity:.9}
+        .nav button.active{
+            background: linear-gradient(90deg, rgba(45,183,255,0.12), rgba(59,107,255,0.08));
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+            transform:none;
+        }
+
+        .spacer{flex:1}
+
+        .sidebar-footer{
+            font-size:12px;color:var(--muted);
+            display:flex;align-items:center;justify-content:space-between;gap:8px;
+        }
+        .toggle{
+            background:transparent;border:0;color:var(--muted);cursor:pointer;padding:6px;border-radius:8px;
+        }
+
+        /* Main area */
+        .main{
+            flex:1;
+            min-height:calc(100vh - 56px);
+            padding:22px;
+            border-radius:14px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03));
+            box-shadow: 0 8px 32px rgba(3,8,20,0.6);
+            position:relative;
+            overflow:hidden;
+        }
+        .header{
+            display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;
+        }
+        .search{
+            display:flex;gap:10px;align-items:center;background:var(--glass);padding:10px;border-radius:12px;
+            width:420px;max-width:60%;
+        }
+        .search input{background:transparent;border:0;color:white;outline:none;width:100%}
+        .hero{
+            display:flex;gap:18px;align-items:center;margin-bottom:18px;
+        }
+        .hero .left{flex:1}
+        .hero h2{margin:0;font-size:28px}
+        .hero p{margin:8px 0 0;color:var(--muted)}
+
+        /* Content cards */
+        .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:12px}
+        .card{
+            background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.02));
+            padding:16px;border-radius:12px;box-shadow: 0 6px 18px rgba(3,8,20,0.5);
+        }
+        .muted{color:var(--muted);font-size:13px}
+
+        /* Page sections (single page switching) */
+        .page{display:none;opacity:0;transform:translateY(8px);transition:all .28s;}
+        .page.active{display:block;opacity:1;transform:none}
+
+        /* Gallery */
+        .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+        .shot{
+            height:140px;border-radius:10px;background:linear-gradient(135deg,#123056,#1e4f8a);
+            display:flex;align-items:end;padding:12px;color:white;font-weight:600;box-shadow:inset 0 -16px 40px rgba(0,0,0,0.18);
+        }
+
+        /* Responsive */
+        @media (max-width:900px){
+            .app{padding:18px;}
+            .sidebar{position:fixed;left:12px;top:12px;bottom:12px;z-index:40;transform:translateX(0);width:220px}
+            .main{margin-left:0}
+            .cards{grid-template-columns:1fr}
+            .gallery{grid-template-columns:repeat(2,1fr)}
+        }
+        @media (max-width:640px){
+            .app{flex-direction:column;padding:12px}
+            .sidebar{width:100%;min-height:auto;display:flex;flex-direction:row;align-items:center;padding:10px;border-radius:12px}
+            .nav{flex-direction:row;gap:6px;overflow:auto}
+            .nav button{padding:8px 10px;border-radius:8px;font-size:13px}
+            .main{padding:14px;border-radius:12px}
+            .hero{flex-direction:column;align-items:flex-start}
+            .gallery{grid-template-columns:1fr}
+        }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+        <aside class="sidebar" aria-label="Navegação principal">
+            <div class="brand">
+                <div class="logo" aria-hidden="true">M</div>
+                <div>
+                    <h1>Marte: Colonização</h1>
+                    <p>Explorar • Preparar • Viver</p>
+                </div>
+            </div>
+
+            <nav class="nav" role="navigation" aria-label="Seções">
+                <button class="nav-item active" data-target="overview" aria-pressed="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L15 8l6 1-4.5 4L18 21l-6-3-6 3 1.5-7L2 9l6-1 3-6z" fill="currentColor" opacity=".9"/></svg>
+                    Visão Geral
+                </button>
+                <button class="nav-item" data-target="prep">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2a2 2 0 012 2v8h6v10H2V12h6V4a2 2 0 012-2z" fill="currentColor" opacity=".9"/></svg>
+                    Preparação
+                </button>
+                <button class="nav-item" data-target="tech">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4z" fill="currentColor" opacity=".9"/></svg>
+                    Tecnologias
+                </button>
+                <button class="nav-item" data-target="life">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2a7 7 0 017 7c0 5-7 13-7 13S5 14 5 9a7 7 0 017-7z" fill="currentColor" opacity=".9"/></svg>
+                    Vida em Marte
+                </button>
+                <button class="nav-item" data-target="gallery">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 3h18v18H3z" fill="currentColor" opacity=".9"/></svg>
+                    Galeria
+                </button>
+                <button class="nav-item" data-target="contact">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 8V7l-3 2-2-1-4 3-6-3-3 2v6l3 2 3-2 6 3 4-3 2 1 3-2V8z" fill="currentColor" opacity=".9"/></svg>
+                    Contato
+                </button>
+            </nav>
+
+            <div class="spacer" aria-hidden="true"></div>
+
+            <div class="sidebar-footer">
+                <div class="muted">Tons de azul • Layout moderno</div>
+                <button class="toggle" id="toggleSidebar" title="Alternar barra">☰</button>
+            </div>
+        </aside>
+
+        <main class="main" id="main" tabindex="-1">
+            <!-- Header -->
+            <div class="header">
+                <div class="search" role="search" aria-label="Pesquisar conteúdo">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="opacity:.8"><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                    <input id="search" placeholder="Pesquisar tópicos — ex: habitats, energia" aria-label="Pesquisar" />
+                </div>
+                <div style="display:flex;gap:12px;align-items:center">
+                    <div class="muted">Versão Beta</div>
+                    <div style="width:40px;height:40px;border-radius:10px;background:var(--accent);display:grid;place-items:center;color:white">AI</div>
+                </div>
+            </div>
+
+            <!-- Hero -->
+            <section class="hero">
+                <div class="left">
+                    <h2 id="pageTitle">Visão Geral</h2>
+                    <p class="muted" id="pageSubtitle">Introdução à colonização de Marte — objetivos, desafios e cronograma.</p>
+                </div>
+                <div style="width:260px;height:120px;border-radius:12px;background:linear-gradient(135deg,#1f5fb8,#2db7ff);box-shadow:0 12px 40px rgba(45,183,255,0.08);display:flex;align-items:center;justify-content:center;color:white;font-weight:700">
+                    2035 → 2060
+                </div>
+            </section>
+
+            <!-- Pages -->
+            <section id="overview" class="page active" aria-live="polite">
+                <div class="card">
+                    <h3>Por que colonizar Marte?</h3>
+                    <p class="muted">Marte representa um passo para a continuidade da espécie humana, pesquisa científica e expansão tecnológica. A colonização envolve desafios de transporte, suporte vital, energia e sociabilidade.</p>
+                </div>
+
+                <div class="cards">
+                    <div class="card">
+                        <h4>Objetivos</h4>
+                        <ul class="muted">
+                            <li>Estabelecer habitats autossuficientes</li>
+                            <li>Produção local de alimentos e combustível</li>
+                            <li>Pesquisa científica e mineração</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h4>Desafios</h4>
+                        <ul class="muted">
+                            <li>Radiação cósmica</li>
+                            <li>Recursos hídricos limitados</li>
+                            <li>Isolamento e psicologia da tripulação</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="prep" class="page" aria-hidden="true">
+                <div class="card">
+                    <h3>Preparação para a missão</h3>
+                    <p class="muted">Treinamento, simulações e desenvolvimento de infraestrutura terrestre. Preparar a logística e contingências é essencial antes do lançamento de missões tripuladas.</p>
+                </div>
+
+                <div class="cards">
+                    <div class="card">
+                        <h4>Treinamento</h4>
+                        <p class="muted">Simuladores de gravidade reduzida, habitats isolados e práticas médicas.</p>
+                    </div>
+                    <div class="card">
+                        <h4>Logística</h4>
+                        <p class="muted">Frotas de carga, estudos de janela de lançamento e fabricação in-situ.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tech" class="page" aria-hidden="true">
+                <div class="card">
+                    <h3>Tecnologias-chave</h3>
+                    <p class="muted">Propulsão avançada, reciclagem do ar e água, produção local de energia e impressão 3D para construção.</p>
+                </div>
+
+                <div class="cards">
+                    <div class="card">
+                        <h4>Energia</h4>
+                        <p class="muted">Painéis solares, reatores compactos e armazenamento em baterias de alta densidade.</p>
+                    </div>
+                    <div class="card">
+                        <h4>Habitat</h4>
+                        <p class="muted">Módulos infláveis, regolith shielding (blindagem com solo marciano) e sistemas de suporte de vida redundantes.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="life" class="page" aria-hidden="true">
+                <div class="card">
+                    <h3>Vida em Marte</h3>
+                    <p class="muted">Rotina, agricultura, comunidade e saúde mental. Vida em Marte exigirá design cuidadoso de espaços e programas sociais.</p>
+                </div>
+
+                <div class="cards">
+                    <div class="card">
+                        <h4>Agricultura</h4>
+                        <p class="muted">Estufas pressurizadas e ciclos fechados de nutrientes.</p>
+                    </div>
+                    <div class="card">
+                        <h4>Comunidade</h4>
+                        <p class="muted">Governança, cultura e capacitação para autonomia local.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="gallery" class="page" aria-hidden="true">
+                <div class="card">
+                    <h3>Galeria conceitual</h3>
+                    <p class="muted">Imagens conceituais e renders (ilustrativos).</p>
+                </div>
+
+                <div class="gallery" style="margin-top:12px">
+                    <div class="shot">Habitat A</div>
+                    <div class="shot">Rovers</div>
+                    <div class="shot">Estufa</div>
+                    <div class="shot">Base Noturna</div>
+                    <div class="shot">Mineração</div>
+                    <div class="shot">Paisagem</div>
+                </div>
+            </section>
+
+            <section id="contact" class="page" aria-hidden="true">
+                <div class="card">
+                    <h3>Contato</h3>
+                    <p class="muted">Quer contribuir ou saber mais? Entre em contato para parcerias e pesquisa.</p>
+
+                    <form id="contactForm" style="margin-top:12px;display:grid;gap:8px">
+                        <input name="name" placeholder="Nome" style="padding:10px;border-radius:8px;border:0;background:var(--card);color:white;outline:none"/>
+                        <input name="email" placeholder="Email" style="padding:10px;border-radius:8px;border:0;background:var(--card);color:white;outline:none"/>
+                        <textarea name="message" rows="4" placeholder="Mensagem" style="padding:10px;border-radius:8px;border:0;background:var(--card);color:white;outline:none"></textarea>
+                        <div style="display:flex;justify-content:flex-end">
+                            <button type="submit" style="background:var(--primary);color:#001020;padding:10px 14px;border-radius:8px;border:0;cursor:pointer">Enviar</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // Navegação: troca de páginas internas sem recarregar.
+        const navButtons = document.querySelectorAll('.nav-item');
+        const pages = document.querySelectorAll('.page');
+        const pageTitle = document.getElementById('pageTitle');
+        const pageSubtitle = document.getElementById('pageSubtitle');
+        const main = document.getElementById('main');
+        const defaultPage = localStorage.getItem('marte.page') || 'overview';
+
+        function activate(target){
+            for(const btn of navButtons){
+                const is = btn.dataset.target === target;
+                btn.classList.toggle('active', is);
+                btn.setAttribute('aria-pressed', is ? 'true' : 'false');
+            }
+            for(const p of pages){
+                const is = p.id === target;
+                p.classList.toggle('active', is);
+                p.setAttribute('aria-hidden', is ? 'false' : 'true');
+            }
+            // Atualiza título/subtítulo simples
+            const map = {
+                overview: ['Visão Geral','Introdução à colonização de Marte — objetivos, desafios e cronograma.'],
+                prep: ['Preparação','Treinamento, logística e simulações.'],
+                tech: ['Tecnologias','Soluções para energia, habitats e transporte.'],
+                life: ['Vida em Marte','Rotina, agricultura e comunidade.'],
+                gallery: ['Galeria','Imagens conceituais e renders.'],
+                contact: ['Contato','Fale conosco para colaborar.']
+            };
+            const txt = map[target] || map.overview;
+            pageTitle.textContent = txt[0];
+            pageSubtitle.textContent = txt[1];
+            localStorage.setItem('marte.page', target);
+            // move focus to main for accessibility
+            main.focus();
+        }
+
+        navButtons.forEach(btn=>{
+            btn.addEventListener('click', ()=> activate(btn.dataset.target));
+            btn.addEventListener('keyup', (e)=>{ if(e.key==='Enter') activate(btn.dataset.target) });
+        });
+
+        // Inicializa
+        activate(defaultPage);
+
+        // Search (simples)
+        document.getElementById('search').addEventListener('input', e=>{
+            const q = e.target.value.trim().toLowerCase();
+            if(!q){ // restaurar página atual
+                activate(localStorage.getItem('marte.page') || 'overview');
+                return;
+            }
+            // pesquisa simples nas seções de texto
+            let found = null;
+            pages.forEach(p=>{
+                if(p.textContent.toLowerCase().includes(q) && !found) found = p.id;
+            });
+            if(found) activate(found);
+        });
+
+        // Sidebar toggle (colapsa no mobile)
+        const toggle = document.getElementById('toggleSidebar');
+        const sidebar = document.querySelector('.sidebar');
+        let collapsed = false;
+        toggle.addEventListener('click', ()=>{
+            collapsed = !collapsed;
+            if(collapsed){
+                sidebar.style.transform = 'translateX(-110%)';
+                toggle.textContent = '☰';
+            }else{
+                sidebar.style.transform = '';
+                toggle.textContent = '✕';
+            }
+        });
+
+        // Form submit fake
+        document.getElementById('contactForm').addEventListener('submit', e=>{
+            e.preventDefault();
+            alert('Mensagem enviada (simulação). Obrigado!');
+            e.target.reset();
+        });
+
+        // Keyboard shortcuts: 1..6 to navigate
+        window.addEventListener('keydown', (e)=>{
+            if(document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+            const map = {'1':'overview','2':'prep','3':'tech','4':'life','5':'gallery','6':'contact'};
+            if(map[e.key]) activate(map[e.key]);
+        });
+    </script>
+</body>
+</html>
